@@ -46,23 +46,65 @@
 
   <main style="width: 100%; max-width: 1200px; padding: 32px; flex: 1; display: flex; flex-direction: column; align-items: stretch;">
     
-    <!-- Site Settings Card for PYQ Link -->
-    <div class="card" style="align-items: stretch; padding: 24px 32px; cursor: default; width: 100%; max-width: 100%; display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px; text-align: left;">
-      <div style="display: flex; flex-direction: column; gap: 4px;">
-        <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-pri); margin: 0;">IEM Previous Year Questions Link</h2>
-        <p style="color: var(--text-sec); font-size: 0.85rem; margin: 0;">Update the destination URL for the navigation link on all pages.</p>
-      </div>
-      <form method="post" action="{% url 'update_pyq_link' %}" style="display: flex; gap: 16px; align-items: center; width: 100%; flex-wrap: wrap;">
-        {% csrf_token %}
-        <div style="flex: 1; min-width: 280px;">
-          <input type="url" name="pyq_link" value="{{ pyq_link }}" placeholder="https://drive.google.com/drive/folders/..." 
-                 style="width: 100%; padding: 14px 16px; background: #111112; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: var(--text-pri); font-family: inherit; font-size: 0.95rem; outline: none; transition: border-color var(--ease);" />
+    <!-- Site Settings Grid (PYQ Link & Credentials) -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 32px; width: 100%;">
+      <!-- Site Settings Card for PYQ Link -->
+      <div class="card" style="align-items: stretch; padding: 24px 32px; cursor: default; display: flex; flex-direction: column; gap: 16px; text-align: left; margin: 0; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-pri); margin: 0;">IEM Previous Year Questions Link</h2>
+          <p style="color: var(--text-sec); font-size: 0.85rem; margin: 0;">Update the destination URL for the navigation link on all pages.</p>
         </div>
-        <button type="submit" class="btn btn-primary" style="height: 48px; padding: 0 24px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap;">
-          Save Link
-        </button>
-      </form>
+        <form method="post" action="{% url 'update_pyq_link' %}" style="display: flex; flex-direction: column; gap: 16px; align-items: stretch; width: 100%;">
+          {% csrf_token %}
+          <div style="width: 100%;">
+            <input type="url" name="pyq_link" value="{{ pyq_link }}" placeholder="https://drive.google.com/drive/folders/..." 
+                   style="width: 100%; padding: 14px 16px; background: #111112; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: var(--text-pri); font-family: inherit; font-size: 0.95rem; outline: none; transition: border-color var(--ease);" />
+          </div>
+          <button type="submit" class="btn btn-primary" style="height: 48px; padding: 0 24px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; width: 100%;">
+            Save Link
+          </button>
+        </form>
+      </div>
+
+      <!-- Change Credentials Card -->
+      <div class="card" style="align-items: stretch; padding: 24px 32px; cursor: default; display: flex; flex-direction: column; gap: 16px; text-align: left; margin: 0; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-pri); margin: 0;">Admin Credentials</h2>
+          <p style="color: var(--text-sec); font-size: 0.85rem; margin: 0;">Change the administrator username and security password.</p>
+        </div>
+        <form method="post" action="{% url 'change_credentials' %}" style="display: flex; flex-direction: column; gap: 12px; align-items: stretch; width: 100%;">
+          {% csrf_token %}
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 145px;">
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-sec); margin-bottom: 4px; display: block; text-transform: uppercase;">Current Password</label>
+              <input type="password" name="current_password" required placeholder="••••••••" 
+                     style="width: 100%; padding: 10px 12px; background: #111112; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: var(--text-pri); font-family: inherit; font-size: 0.9rem; outline: none; transition: border-color var(--ease);" />
+            </div>
+            <div style="flex: 1; min-width: 145px;">
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-sec); margin-bottom: 4px; display: block; text-transform: uppercase;">New Username</label>
+              <input type="text" name="new_username" placeholder="New username (optional)" 
+                     style="width: 100%; padding: 10px 12px; background: #111112; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: var(--text-pri); font-family: inherit; font-size: 0.9rem; outline: none; transition: border-color var(--ease);" />
+            </div>
+          </div>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 145px;">
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-sec); margin-bottom: 4px; display: block; text-transform: uppercase;">New Password</label>
+              <input type="password" name="new_password" placeholder="••••••••" 
+                     style="width: 100%; padding: 10px 12px; background: #111112; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: var(--text-pri); font-family: inherit; font-size: 0.9rem; outline: none; transition: border-color var(--ease);" />
+            </div>
+            <div style="flex: 1; min-width: 145px;">
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-sec); margin-bottom: 4px; display: block; text-transform: uppercase;">Confirm New Password</label>
+              <input type="password" name="confirm_new_password" placeholder="••••••••" 
+                     style="width: 100%; padding: 10px 12px; background: #111112; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: var(--text-pri); font-family: inherit; font-size: 0.9rem; outline: none; transition: border-color var(--ease);" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="height: 48px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; width: 100%; margin-top: 4px;">
+            Update Credentials
+          </button>
+        </form>
+      </div>
     </div>
+
 
     <!-- Section Heading for Companies list -->
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 12px; margin-bottom: 24px;">

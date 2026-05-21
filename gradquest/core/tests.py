@@ -217,3 +217,80 @@ class CompanyAdminTestCase(TestCase):
         form = response.context['form']
         self.assertIn("Please provide either a logo file upload or a direct logo image URL.", form.non_field_errors())
         self.assertFalse(Company.objects.filter(name='No Logo Company').exists())
+
+    def test_change_credentials_unauthorized(self):
+        """Anonymous and non-staff users cannot change credentials."""
+        url = reverse('change_credentials')
+        # Anonymous
+        response = self.client.post(url, {
+            'current_password': 'staffpassword123',
+            'new_username': 'newadmin'
+        })
+        self.assertRedirects(response, f"{reverse('login')}?next={url}")
+
+        # Non-staff
+        self.client.login(username='regularuser', password='userpassword123')
+        response = self.client.post(url, {
+            'current_password': 'staffpassword123',
+            'new_username': 'newadmin'
+        })
+        self.assertEqual(response.status_code, 403)
+
+    def test_change_credentials_incorrect_current_password(self):
+        """Fails to change credentials when current password is incorrect."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        response = self.client.post(reverse('change_credentials'), {
+            'current_password': 'wrongpassword',
+            'new_username': 'newadmin'
+        })
+        self.assertRedirects(response, reverse('dashboard'))
+        # Check that user username didn't change
+        self.admin_user.refresh_from_db()
+        self.assertEqual(self.admin_user.username, 'staffadmin')
+
+    def test_change_credentials_success_username_only(self):
+        """Successfully updates the username only."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        response = self.client.post(reverse('change_credentials'), {
+            'current_password': 'staffpassword123',
+            'new_username': 'newstaffadmin'
+        })
+        self.assertRedirects(response, reverse('dashboard'))
+        self.admin_user.refresh_from_db()
+        self.assertEqual(self.admin_user.username, 'newstaffadmin')
+
+    def test_change_credentials_success_password_only(self):
+        """Successfully updates the password only."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        response = self.client.post(reverse('change_credentials'), {
+            'current_password': 'staffpassword123',
+            'new_password': 'newpassword123',
+            'confirm_new_password': 'newpassword123'
+        })
+        self.assertRedirects(response, reverse('dashboard'))
+        self.admin_user.refresh_from_db()
+        self.assertTrue(self.admin_user.check_password('newpassword123'))
+
+    def test_change_credentials_mismatch_passwords(self):
+        """Fails when new password and confirmation do not match."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        response = self.client.post(reverse('change_credentials'), {
+            'current_password': 'staffpassword123',
+            'new_password': 'newpassword123',
+            'confirm_new_password': 'differentpassword'
+        })
+        self.assertRedirects(response, reverse('dashboard'))
+        self.admin_user.refresh_from_db()
+        self.assertFalse(self.admin_user.check_password('newpassword123'))
+
+    def test_change_credentials_username_taken(self):
+        """Fails when the requested new username is already taken by another user."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        response = self.client.post(reverse('change_credentials'), {
+            'current_password': 'staffpassword123',
+            'new_username': 'regularuser' # Already exists
+        })
+        self.assertRedirects(response, reverse('dashboard'))
+        self.admin_user.refresh_from_db()
+        self.assertEqual(self.admin_user.username, 'staffadmin')
+

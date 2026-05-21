@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from .models import Company, SiteSetting
-from .forms import CompanyForm
+from .forms import CompanyForm, ChangeCredentialsForm
 
 def index(request):
     companies = Company.objects.all()
@@ -116,4 +116,42 @@ def update_pyq_link_view(request):
             messages.success(request, "IEM PYQ redirection link updated successfully.")
         else:
             messages.success(request, "IEM PYQ link cleared. Users will see a 'Coming Soon' popup.")
+    return redirect('dashboard')
+
+@staff_required
+def change_credentials_view(request):
+    if request.method == 'POST':
+        form = ChangeCredentialsForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = request.user
+            new_username = form.cleaned_data.get('new_username')
+            new_password = form.cleaned_data.get('new_password')
+            
+            updated_fields = []
+            if new_username:
+                user.username = new_username
+                updated_fields.append("username")
+            if new_password:
+                user.set_password(new_password)
+                updated_fields.append("password")
+            
+            user.save()
+            
+            # Keep the user logged in after password change
+            if new_password:
+                update_session_auth_hash(request, user)
+                
+            msg = f"Admin {' and '.join(updated_fields)} updated successfully."
+            messages.success(request, msg)
+        else:
+            # Join errors to display as a single toast message
+            error_list = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    error_list.append(error)
+            for error in form.non_field_errors():
+                error_list.append(error)
+            
+            messages.error(request, "Failed to update credentials: " + " ".join(error_list))
+            
     return redirect('dashboard')
