@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/assets/icons/stack-fill.svg"
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GradQuest</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#EDEDED"/>
+        <path d="M2 12L12 17L22 12" stroke="#EDEDED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 17L12 22L22 17" stroke="#EDEDED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>GradQuest</span>
+    </div>
+    <div class="nav-links">
+      <!-- <a href="/PYQ.html">IEM Previous Year Questions</a> -->
+      <a href="#" class="active">Interview Coding Round</a>
+    </div>
+  </nav>
+
+  <header>
+    <h1>Crack Your Next Tech Interview</h1>
+    <div class="search-container">
+      <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Search companies..." />
+    </div>
+  </header>
+
+  <main>
+    <div class="grid" id="companyGrid">
+      <a href="https://leetcode.com/problem-list/dh5qyu77/" target="_blank" class="card">
+        <div class="logo-wrap white-bg">
+          <img src="/assets/TCS.png" alt="TCS" />
+        </div>
+        <span class="company-name">TCS</span>
+        <span class="badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          200+ Questions
+        </span>
+      </a>
+
+      <a href="https://leetcode.com/problem-list/dh53bqy1/" target="_blank" class="card">
+        <div class="logo-wrap white-bg">
+          <img src="/assets/SAP.jpg" alt="SAP Labs" />
+        </div>
+        <span class="company-name">SAP Labs</span>
+        <span class="badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          45+ Questions
+        </span>
+      </a>
+
+      <a href="https://leetcode.com/problem-list/dhmwrmxv/" target="_blank" class="card">
+        <div class="logo-wrap white-bg">
+          <img src="/assets/Cognizant.png" alt="Cognizant" />
+        </div>
+        <span class="company-name">Cognizant</span>
+        <span class="badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          45+ Questions
+        </span>
+      </a>
+
+      <a href="https://leetcode.com/problem-list/dhmrarue/" target="_blank" class="card">
+        <div class="logo-wrap white-bg">
+          <img src="/assets/Deloitte.png" alt="Deloitte" />
+        </div>
+        <span class="company-name">Deloitte</span>
+        <span class="badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          20+ Questions
+        </span>
+      </a>
+
+      <a href="https://leetcode.com/problem-list/dhmp02zm/" target="_blank" class="card">
+        <div class="logo-wrap">
+          <img src="/assets/Infosys.jpg" alt="Infosys" />
+        </div>
+        <span class="company-name">Infosys</span>
+        <span class="badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          0+ Questions
+        </span>
+      </a>
+
+      <a href="https://leetcode.com/problem-list/dhmpjij5/" target="_blank" class="card">
+        <div class="logo-wrap white-bg">
+          <img src="/assets/Capgemini.png" alt="Capgemini" />
+        </div>
+        <span class="company-name">Capgemini</span>
+        <span class="badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          0+ Questions
+        </span>
+      </a>
+
+    </div>
+  </main>
+  
+  <footer>
+    <p>Empowering developers to crack the interview.</p>
+    <p>Built by <span class="author">Soumyajit Paul</span></p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
