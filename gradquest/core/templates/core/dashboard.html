@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - GradQuest</title>
   <link rel="icon" type="image/x-icon" href="{% static 'assets/icons/stack-fill.svg' %}">
-  <link rel="stylesheet" href="{% static 'style.css' %}?v=3" />
+  <link rel="stylesheet" href="{% static 'style.css' %}?v=2" />
 </head>
 <body>
 
@@ -19,11 +19,6 @@
       </svg>
       <span>GradQuest</span>
     </div>
-    <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
     <div class="nav-links">
       <a href="{% url 'dashboard' %}" class="active">Dashboard</a>
       <a href="{% url 'pyq' %}">IEM Previous Year Questions</a>
@@ -155,6 +150,37 @@
     {% endif %}
   </div>
 
-  <script src="{% static 'script.js' %}?v=3"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Search Bar Filtering Logic
+      const searchInput = document.getElementById('searchInput');
+      const cards = document.querySelectorAll('.card');
+
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          const searchTerm = e.target.value.toLowerCase();
+          cards.forEach(card => {
+            const companyName = card.querySelector('.company-name').textContent.toLowerCase();
+            if (companyName.includes(searchTerm)) {
+              card.style.display = 'flex';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      }
+
+      // Toast Dismissal
+      const alerts = document.querySelectorAll('#toastContainer .alert');
+      alerts.forEach(alert => {
+        setTimeout(() => {
+          alert.classList.add('fade-out');
+          setTimeout(() => {
+            alert.remove();
+          }, 500);
+        }, 4000);
+      });
+    });
+  </script>
 </body>
 </html>

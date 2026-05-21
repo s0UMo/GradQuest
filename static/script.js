@@ -1,34 +1,31 @@
+// Search Bar Filtering Logic
+const searchInput = document.getElementById('searchInput');
+const cards = document.querySelectorAll('.card');
+
+searchInput.addEventListener('input', (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+
+  cards.forEach(card => {
+    // Look for the company name inside the card
+    const companyName = card.querySelector('.company-name').textContent.toLowerCase();
+    
+    // Toggle display based on whether it matches the search term
+    if (companyName.includes(searchTerm)) {
+      card.style.display = 'flex';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+});
+
+// Optional: Extra CSS class logic from your original script
+cards.forEach(card => {
+  card.addEventListener('mouseenter', () => card.classList.add('hovered'));
+  card.addEventListener('mouseleave', () => card.classList.remove('hovered'));
+});
+
+// ── Coming Soon Modal Interaction ──────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // ── Search Bar Filtering Logic ─────────────────────
-  const searchInput = document.getElementById('searchInput');
-  const cards = document.querySelectorAll('.card');
-
-  if (searchInput && cards.length > 0) {
-    searchInput.addEventListener('input', (e) => {
-      const searchTerm = e.target.value.toLowerCase();
-      cards.forEach(card => {
-        const nameEl = card.querySelector('.company-name');
-        if (nameEl) {
-          const companyName = nameEl.textContent.toLowerCase();
-          if (companyName.includes(searchTerm)) {
-            card.style.display = 'flex';
-          } else {
-            card.style.display = 'none';
-          }
-        }
-      });
-    });
-  }
-
-  // ── Card Hover Effects ─────────────────────────────
-  if (cards.length > 0) {
-    cards.forEach(card => {
-      card.addEventListener('mouseenter', () => card.classList.add('hovered'));
-      card.addEventListener('mouseleave', () => card.classList.remove('hovered'));
-    });
-  }
-
-  // ── Coming Soon Modal Interaction ──────────────────
   const modal = document.getElementById('comingSoonModal');
   const openButtons = document.querySelectorAll('.pyq-coming-soon-btn');
   const closeButton = document.getElementById('closeModalBtn');
@@ -77,44 +74,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const newUrl = window.location.pathname + (newQueryString ? '?' + newQueryString : '') + window.location.hash;
     window.history.replaceState({}, document.title, newUrl);
   }
-
-  // ── Mobile Hamburger Menu Toggle ───────────────────
-  const navbarToggle = document.getElementById('navbarToggle');
-  const navLinks = document.querySelector('.nav-links');
-
-  if (navbarToggle && navLinks) {
-    navbarToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      navbarToggle.classList.toggle('active');
-      navLinks.classList.toggle('active');
-    });
-
-    // Close when clicking a link
-    const links = navLinks.querySelectorAll('a');
-    links.forEach(link => {
-      link.addEventListener('click', () => {
-        navbarToggle.classList.remove('active');
-        navLinks.classList.remove('active');
-      });
-    });
-
-    // Close when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!navLinks.contains(e.target) && !navbarToggle.contains(e.target)) {
-        navbarToggle.classList.remove('active');
-        navLinks.classList.remove('active');
-      }
-    });
-  }
-
-  // ── Toast Dismissal ────────────────────────────────
-  const alerts = document.querySelectorAll('#toastContainer .alert');
-  alerts.forEach(alert => {
-    setTimeout(() => {
-      alert.classList.add('fade-out');
-      setTimeout(() => {
-        alert.remove();
-      }, 500);
-    }, 4000);
-  });
 });
