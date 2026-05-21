@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm Delete - GradQuest</title>
+  <link rel="icon" type="image/x-icon" href="{% static 'assets/icons/stack-fill.svg' %}">
+  <link rel="stylesheet" href="{% static 'style.css' %}?v=2" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#EDEDED"/>
+        <path d="M2 12L12 17L22 12" stroke="#EDEDED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 17L12 22L22 17" stroke="#EDEDED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>GradQuest</span>
+    </div>
+    <div class="nav-links">
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'pyq' %}">IEM Previous Year Questions</a>
+      <a href="{% url 'index' %}">Interview Coding Round</a>
+      <a href="{% url 'logout' %}" class="login-nav-btn logout-link">Logout</a>
+    </div>
+  </nav>
+
+  <main style="display: flex; justify-content: center; align-items: center; padding: 48px 24px; min-height: calc(100vh - 200px); width: 100%;">
+    <div class="card" style="width: 100%; max-width: 460px; padding: 40px; text-align: left; cursor: default; align-items: stretch; animation: fadeUp 0.45s ease both;">
+      <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; text-align: center; color: var(--text-pri);">Are you sure?</h2>
+      <p style="color: var(--text-sec); font-size: 0.85rem; margin-bottom: 24px; text-align: center;">This action is permanent and cannot be undone.</p>
+      
+      <div class="delete-warning-details" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 24px;">
+        <div class="logo-preview-container">
+          <div class="logo-preview {% if company.needs_white_bg %}white-bg{% endif %}" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
+            <img src="{{ company.logo.url }}" alt="{{ company.name }} logo" style="width: 100%; height: 100%; object-fit: contain;" />
+          </div>
+        </div>
+        <p class="delete-target-text" style="text-align: center; font-size: 0.95rem; color: var(--text-pri); margin: 0;">You are about to delete <strong>{{ company.name }}</strong>.</p>
+      </div>
+
+      <form method="post" style="display: flex; flex-direction: column; gap: 12px;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-delete" style="padding: 14px; font-weight: 600; border-radius: 8px;">Confirm Delete</button>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="padding: 14px; font-weight: 600; border-radius: 8px; text-align: center;">Cancel</a>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>Empowering developers to crack the interview.</p>
+    <p>Built by <span class="author">Soumyajit Paul</span></p>
+  </footer>
+
+  <div class="messages-container" id="toastContainer">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {{ message.tags }}" role="alert">
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const alerts = document.querySelectorAll('#toastContainer .alert');
+      alerts.forEach(alert => {
+        setTimeout(() => {
+          alert.classList.add('fade-out');
+          setTimeout(() => {
+            alert.remove();
+          }, 500);
+        }, 4000);
+      });
+    });
+  </script>
+</body>
+</html>

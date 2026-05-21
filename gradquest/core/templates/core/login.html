@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - GradQuest</title>
+  <link rel="icon" type="image/x-icon" href="{% static 'assets/icons/stack-fill.svg' %}">
+  <link rel="stylesheet" href="{% static 'style.css' %}?v=2" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#EDEDED"/>
+        <path d="M2 12L12 17L22 12" stroke="#EDEDED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 17L12 22L22 17" stroke="#EDEDED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>GradQuest</span>
+    </div>
+    <div class="nav-links">
+      <a href="{% url 'pyq' %}">IEM Previous Year Questions</a>
+      <a href="{% url 'index' %}">Interview Coding Round</a>
+      <a href="{% url 'login' %}" class="login-nav-btn active">Admin Login</a>
+    </div>
+  </nav>
+
+  <main style="display: flex; justify-content: center; align-items: center; padding: 48px 24px; min-height: calc(100vh - 200px); width: 100%;">
+    <div class="card" style="width: 100%; max-width: 400px; padding: 40px; text-align: left; cursor: default; align-items: stretch; animation: fadeUp 0.45s ease both;">
+      <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; text-align: center; color: var(--text-pri);">Admin Sign In</h2>
+      <p style="color: var(--text-sec); font-size: 0.85rem; margin-bottom: 24px; text-align: center;">Enter your administrator credentials to access the dashboard.</p>
+      
+      <form method="post" action="{% url 'login' %}" style="display: flex; flex-direction: column; gap: 20px;">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="id_username" style="font-size: 0.8rem; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em;">Username</label>
+          <input type="text" name="username" autofocus required id="id_username" class="form-input" placeholder="e.g. admin">
+        </div>
+        <div class="form-group">
+          <label for="id_password" style="font-size: 0.8rem; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em;">Password</label>
+          <input type="password" name="password" required id="id_password" class="form-input" placeholder="••••••••">
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="padding: 14px; font-weight: 600; border-radius: 8px; margin-top: 10px;">Sign In</button>
+      </form>
+      
+      <div style="margin-top: 24px; text-align: center;">
+        <a href="{% url 'index' %}" style="color: var(--text-sec); text-decoration: none; font-size: 0.85rem; transition: color var(--ease);">&larr; Back to Home</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>Empowering developers to crack the interview.</p>
+    <p>Built by <span class="author">Soumyajit Paul</span></p>
+  </footer>
+
+  <div class="messages-container" id="toastContainer">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {{ message.tags }}" role="alert">
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const alerts = document.querySelectorAll('#toastContainer .alert');
+      alerts.forEach(alert => {
+        setTimeout(() => {
+          alert.classList.add('fade-out');
+          setTimeout(() => {
+            alert.remove();
+          }, 500);
+        }, 4000);
+      });
+    });
+  </script>
+</body>
+</html>

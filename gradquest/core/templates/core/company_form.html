@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ action }} Company - GradQuest</title>
+  <link rel="icon" type="image/x-icon" href="{% static 'assets/icons/stack-fill.svg' %}">
+  <link rel="stylesheet" href="{% static 'style.css' %}?v=2" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#EDEDED"/>
+        <path d="M2 12L12 17L22 12" stroke="#EDEDED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 17L12 22L22 17" stroke="#EDEDED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>GradQuest</span>
+    </div>
+    <div class="nav-links">
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'pyq' %}">IEM Previous Year Questions</a>
+      <a href="{% url 'index' %}">Interview Coding Round</a>
+      <a href="{% url 'logout' %}" class="login-nav-btn logout-link">Logout</a>
+    </div>
+  </nav>
+
+  <main style="display: flex; justify-content: center; align-items: center; padding: 48px 24px; min-height: calc(100vh - 200px); width: 100%;">
+    <div class="card" style="width: 100%; max-width: 550px; padding: 40px; text-align: left; cursor: default; align-items: stretch; animation: fadeUp 0.45s ease both;">
+      <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; text-align: center; color: var(--text-pri);">{{ action }} Company</h2>
+      <p style="color: var(--text-sec); font-size: 0.85rem; margin-bottom: 32px; text-align: center;">Fill out the details below to save the company entry.</p>
+
+      <form method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 24px;">
+        {% csrf_token %}
+        
+        <div class="form-group">
+          <label for="{{ form.name.id_for_label }}" style="font-size: 0.8rem; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em;">Company Name</label>
+          {{ form.name }}
+          {% if form.name.errors %}
+            <div class="field-error">{{ form.name.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.logo.id_for_label }}" style="font-size: 0.8rem; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em;">Company Logo</label>
+          {% if company and company.logo %}
+            <div class="logo-preview-container" style="display: flex; align-items: center; gap: 16px; margin: 8px 0;">
+              <div class="logo-preview {% if company.needs_white_bg %}white-bg{% endif %}" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
+                <img src="{{ company.logo.url }}" alt="Current Logo" style="width: 100%; height: 100%; object-fit: contain;" />
+              </div>
+              <span class="preview-text" style="font-size: 0.8rem; color: var(--text-sec);">Current Logo</span>
+            </div>
+          {% endif %}
+          <div style="position: relative; background: #111112; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px 16px;">
+            {{ form.logo }}
+          </div>
+          {% if form.logo.errors %}
+            <div class="field-error">{{ form.logo.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.link.id_for_label }}" style="font-size: 0.8rem; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em;">LeetCode / Question Link</label>
+          {{ form.link }}
+          {% if form.link.errors %}
+            <div class="field-error">{{ form.link.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.question_count.id_for_label }}" style="font-size: 0.8rem; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em;">Question Count Badge</label>
+          {{ form.question_count }}
+          {% if form.question_count.errors %}
+            <div class="field-error">{{ form.question_count.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group checkbox-group" style="flex-direction: row; align-items: center; gap: 10px; margin-top: -8px;">
+          <label class="checkbox-label" style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; user-select: none;">
+            {{ form.needs_white_bg }}
+            <span>Needs white background wrapper</span>
+          </label>
+        </div>
+
+        <div class="form-actions" style="display: flex; gap: 12px; margin-top: 12px;">
+          <button type="submit" class="btn btn-primary" style="flex: 2; padding: 14px; font-weight: 600; border-radius: 8px;">Save Company</button>
+          <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="flex: 1; padding: 14px; font-weight: 600; border-radius: 8px; text-align: center;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>Empowering developers to crack the interview.</p>
+    <p>Built by <span class="author">Soumyajit Paul</span></p>
+  </footer>
+
+  <div class="messages-container" id="toastContainer">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {{ message.tags }}" role="alert">
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const alerts = document.querySelectorAll('#toastContainer .alert');
+      alerts.forEach(alert => {
+        setTimeout(() => {
+          alert.classList.add('fade-out');
+          setTimeout(() => {
+            alert.remove();
+          }, 500);
+        }, 4000);
+      });
+    });
+  </script>
+</body>
+</html>
