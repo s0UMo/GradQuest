@@ -171,6 +171,23 @@ class CompanyAdminTestCase(TestCase):
         response = self.client.post(reverse('update_pyq_link'), {'pyq_link': test_url})
         self.assertEqual(response.status_code, 403)
 
+    def test_pyq_update_link_empty(self):
+        """Staff user can successfully clear the PYQ link (set to empty string)."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        response = self.client.post(reverse('update_pyq_link'), {'pyq_link': ''})
+        self.assertRedirects(response, reverse('dashboard'))
+        
+        # Verify it updated in DB to empty
+        from .models import SiteSetting
+        setting = SiteSetting.objects.first()
+        self.assertIsNotNone(setting)
+        self.assertEqual(setting.pyq_link, '')
+        
+        # Verify the redirect view redirects to home with coming_soon=true
+        response_pyq = self.client.get(reverse('pyq'))
+        self.assertRedirects(response_pyq, '/?coming_soon=true')
+
+
     def test_create_company_with_logo_url(self):
         """Staff user can create a new company using only a logo_url link instead of uploading a file."""
         self.client.login(username='staffadmin', password='staffpassword123')

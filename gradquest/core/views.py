@@ -13,7 +13,10 @@ def index(request):
 
 def pyq_redirect(request):
     pyq_link = SiteSetting.get_pyq_link()
+    if not pyq_link:
+        return redirect('/?coming_soon=true')
     return render(request, 'core/PYQ.html', {'pyq_link': pyq_link})
+
 
 def login_view(request):
     if request.user.is_authenticated and request.user.is_staff:
@@ -105,12 +108,12 @@ def company_delete_view(request, pk):
 @staff_required
 def update_pyq_link_view(request):
     if request.method == 'POST':
-        pyq_link = request.POST.get('pyq_link')
+        pyq_link = request.POST.get('pyq_link', '').strip()
+        setting, created = SiteSetting.objects.get_or_create(id=1)
+        setting.pyq_link = pyq_link
+        setting.save()
         if pyq_link:
-            setting, created = SiteSetting.objects.get_or_create(id=1)
-            setting.pyq_link = pyq_link
-            setting.save()
             messages.success(request, "IEM PYQ redirection link updated successfully.")
         else:
-            messages.error(request, "Failed to update link. URL cannot be empty.")
+            messages.success(request, "IEM PYQ link cleared. Users will see a 'Coming Soon' popup.")
     return redirect('dashboard')

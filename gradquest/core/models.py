@@ -25,8 +25,9 @@ class Company(models.Model):
 
 class SiteSetting(models.Model):
     pyq_link = models.URLField(
-        default="https://drive.google.com/drive/folders/1VT_6K9Q1zfIdbDLjf96YrsyEk3hfbMvX?usp=sharing",
-        help_text="The URL for the IEM Previous Year Questions"
+        blank=True,
+        default="",
+        help_text="The URL for the IEM Previous Year Questions. Leave blank to show 'Coming Soon' popup."
     )
 
     class Meta:
@@ -40,4 +41,4 @@ class SiteSetting(models.Model):
         setting = cls.objects.first()
         if not setting:
             return "https://drive.google.com/drive/folders/1VT_6K9Q1zfIdbDLjf96YrsyEk3hfbMvX?usp=sharing"
-        return setting.pyq_link
+        return setting.pyq_link or ""
