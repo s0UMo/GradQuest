@@ -28,10 +28,11 @@ GradQuest is a premium, modern, dark-themed tech interview preparation platform 
 
 ## 🔒 Administrative Credentials
 
-Authenticated administrative dashboard actions require staff/superuser privileges. Use the following credentials to access administrative pages:
+Authenticated administrative dashboard actions require staff/superuser privileges. You can create a local superuser account by running:
 
-- **Username:** `admin`
-- **Password:** `admin123`
+```bash
+python gradquest/manage.py createsuperuser
+```
 
 ---
 
