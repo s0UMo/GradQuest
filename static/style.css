@@ -56,6 +56,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 
 .logo {
@@ -268,8 +269,91 @@ footer .author {
 }
 
 /* ── Responsive ────────────────────────────── */
+.navbar-toggle {
+  display: none;
+}
+
 @media (max-width: 768px) {
-  .navbar { flex-direction: column; gap: 20px; }
+  .navbar {
+    padding: 20px 24px;
+  }
+  
+  .navbar-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 24px;
+    height: 18px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1001;
+  }
+
+  .navbar-toggle span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: var(--text-pri);
+    border-radius: 2px;
+    transition: transform var(--ease), opacity var(--ease);
+  }
+
+  /* Morphing hamburger lines into 'X' */
+  .navbar-toggle.active span:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+
+  .navbar-toggle.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .navbar-toggle.active span:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 72px;
+    left: 24px;
+    right: 24px;
+    background: rgba(30, 30, 30, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 24px;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity var(--ease), transform var(--ease);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .nav-links.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .nav-links a {
+    width: 100%;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 1.05rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  /* Remove border on the last button/link */
+  .nav-links a:last-child {
+    border-bottom: none;
+  }
+
   .grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
   header h1 { font-size: 1.5rem; }
 }

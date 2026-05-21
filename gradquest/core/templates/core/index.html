@@ -19,6 +19,11 @@
       </svg>
       <span>GradQuest</span>
     </div>
+    <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <div class="nav-links">
       {% if user.is_authenticated and user.is_staff %}
         <a href="{% url 'dashboard' %}">Dashboard</a>
@@ -101,18 +106,5 @@
   </div>
 
   <script src="{% static 'script.js' %}"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const alerts = document.querySelectorAll('#toastContainer .alert');
-      alerts.forEach(alert => {
-        setTimeout(() => {
-          alert.classList.add('fade-out');
-          setTimeout(() => {
-            alert.remove();
-          }, 500);
-        }, 4000);
-      });
-    });
-  </script>
 </body>
 </html>
