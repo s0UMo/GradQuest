@@ -11,19 +11,25 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env files if they exist
+load_dotenv(BASE_DIR.parent / '.env')
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-g17)1drz4y#&cv&1so!c2)dfj%88-mh87l=^-+p_^*k)x68wm8'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-g17)1drz4y#&cv&1so!c2)dfj%88-mh87l=^-+p_^*k)x68wm8')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.vercel.app']
 
@@ -37,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     'core',
 ]
 
@@ -70,14 +77,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'gradquest.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+import dj_database_url
+
+db_url = os.environ.get('DATABASE_URL', '').strip()
+if not db_url:
+    db_url = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.parse(db_url, conn_max_age=600)
 }
 
 
@@ -123,6 +130,39 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR.parent, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# AWS S3 Settings (for media files in production)
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
+AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
+
+if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_STORAGE_BUCKET_NAME:
+    DEFAULT_STORAGE_BACKEND = "storages.backends.s3.S3Storage"
+    DEFAULT_STORAGE_OPTIONS = {
+        "access_key": AWS_ACCESS_KEY_ID,
+        "secret_key": AWS_SECRET_ACCESS_KEY,
+        "bucket_name": AWS_STORAGE_BUCKET_NAME,
+        "region_name": AWS_S3_REGION_NAME,
+        "querystring_auth": False,
+    }
+    if AWS_S3_ENDPOINT_URL:
+        DEFAULT_STORAGE_OPTIONS["endpoint_url"] = AWS_S3_ENDPOINT_URL
+else:
+    DEFAULT_STORAGE_BACKEND = "django.core.files.storage.FileSystemStorage"
+    DEFAULT_STORAGE_OPTIONS = {}
+
+STORAGES = {
+    "default": {
+        "BACKEND": DEFAULT_STORAGE_BACKEND,
+        "OPTIONS": DEFAULT_STORAGE_OPTIONS,
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

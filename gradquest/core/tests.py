@@ -170,3 +170,33 @@ class CompanyAdminTestCase(TestCase):
         self.client.login(username='regularuser', password='userpassword123')
         response = self.client.post(reverse('update_pyq_link'), {'pyq_link': test_url})
         self.assertEqual(response.status_code, 403)
+
+    def test_create_company_with_logo_url(self):
+        """Staff user can create a new company using only a logo_url link instead of uploading a file."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        response = self.client.post(reverse('company_create'), {
+            'name': 'Imgur Logo Company',
+            'logo_url': 'https://i.imgur.com/example.png',
+            'link': 'https://leetcode.com/problem-list/example-2/',
+            'question_count': '15+ Questions',
+            'needs_white_bg': True
+        })
+        self.assertRedirects(response, reverse('dashboard'))
+        company = Company.objects.get(name='Imgur Logo Company')
+        self.assertEqual(company.logo_url, 'https://i.imgur.com/example.png')
+        self.assertEqual(company.get_logo_url, 'https://i.imgur.com/example.png')
+        self.assertFalse(company.logo)
+
+    def test_create_company_requires_at_least_one_logo(self):
+        """Creating a company fails validation if both logo file and logo_url are omitted."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        response = self.client.post(reverse('company_create'), {
+            'name': 'No Logo Company',
+            'link': 'https://leetcode.com/problem-list/example-3/',
+            'question_count': '5+ Questions',
+            'needs_white_bg': True
+        })
+        self.assertEqual(response.status_code, 200) # Form returns errors
+        form = response.context['form']
+        self.assertIn("Please provide either a logo file upload or a direct logo image URL.", form.non_field_errors())
+        self.assertFalse(Company.objects.filter(name='No Logo Company').exists())

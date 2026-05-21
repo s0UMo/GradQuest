@@ -35,7 +35,7 @@
       <div class="delete-warning-details" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 24px;">
         <div class="logo-preview-container">
           <div class="logo-preview {% if company.needs_white_bg %}white-bg{% endif %}" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
-            <img src="{{ company.logo.url }}" alt="{{ company.name }} logo" style="width: 100%; height: 100%; object-fit: contain;" />
+            <img src="{{ company.get_logo_url }}" alt="{{ company.name }} logo" style="width: 100%; height: 100%; object-fit: contain;" />
           </div>
         </div>
         <p class="delete-target-text" style="text-align: center; font-size: 0.95rem; color: var(--text-pri); margin: 0;">You are about to delete <strong>{{ company.name }}</strong>.</p>

@@ -2,10 +2,19 @@ from django.db import models
 
 class Company(models.Model):
     name = models.CharField(max_length=100)
-    logo = models.ImageField(upload_to='company_logos/')
+    logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
+    logo_url = models.URLField(blank=True, null=True, help_text="Alternatively, enter a direct image URL (e.g. from Imgur)")
     link = models.URLField(help_text="Link to LeetCode or question bank")
     question_count = models.CharField(max_length=50, default="0+ Questions")
     needs_white_bg = models.BooleanField(default=True, help_text="Check if logo needs a white background wrapper")
+
+    @property
+    def get_logo_url(self):
+        if self.logo_url:
+            return self.logo_url
+        elif self.logo:
+            return self.logo.url
+        return ""
 
     class Meta:
         verbose_name_plural = "Companies"
