@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,11 +78,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'gradquest.wsgi.application'
 
 
+import sys
 import dj_database_url
 
-db_url = os.environ.get('DATABASE_URL', '').strip()
-if not db_url:
+if 'test' in sys.argv or 'test_coverage' in sys.argv:
     db_url = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+else:
+    db_url = os.environ.get('DATABASE_URL', '').strip()
+    if not db_url:
+        db_url = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
 
 DATABASES = {
     'default': dj_database_url.parse(db_url, conn_max_age=600)
@@ -154,13 +159,18 @@ else:
     DEFAULT_STORAGE_BACKEND = "django.core.files.storage.FileSystemStorage"
     DEFAULT_STORAGE_OPTIONS = {}
 
+if DEBUG or 'test' in sys.argv or 'test_coverage' in sys.argv:
+    STATICFILES_STORAGE_BACKEND = "whitenoise.storage.CompressedStaticFilesStorage"
+else:
+    STATICFILES_STORAGE_BACKEND = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 STORAGES = {
     "default": {
         "BACKEND": DEFAULT_STORAGE_BACKEND,
         "OPTIONS": DEFAULT_STORAGE_OPTIONS,
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "BACKEND": STATICFILES_STORAGE_BACKEND,
     },
 }
 
