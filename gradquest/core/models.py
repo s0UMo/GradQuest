@@ -22,6 +22,17 @@ class Company(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        from django.core.cache import cache
+        cache.delete('sorted_companies')
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        from django.core.cache import cache
+        cache.delete('sorted_companies')
+        super().delete(*args, **kwargs)
+
+
 
 class SiteSetting(models.Model):
     pyq_link = models.URLField(

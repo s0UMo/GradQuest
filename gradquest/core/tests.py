@@ -326,3 +326,57 @@ class CompanyAdminTestCase(TestCase):
         names_dash = [c.name for c in companies_dash]
         self.assertEqual(names_dash, sorted(names_dash, key=str.lower))
 
+
+from django.core.cache import cache
+
+class CompanyCacheTestCase(TestCase):
+    def setUp(self):
+        # Clear cache before each test
+        cache.clear()
+        self.company = Company.objects.create(
+            name='Cached Company',
+            link='https://leetcode.com/',
+            question_count='50+ Questions',
+            logo_url='https://example.com/logo.png'
+        )
+
+    def test_cache_is_created_on_index_view(self):
+        """Home page hit should generate the 'sorted_companies' cache key."""
+        self.assertIsNone(cache.get('sorted_companies'))
+        
+        # Hit homepage
+        response = self.client.get(reverse('index'))
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify cache contains the company
+        cached_data = cache.get('sorted_companies')
+        self.assertIsNotNone(cached_data)
+        self.assertEqual(len(cached_data), 1)
+        self.assertEqual(cached_data[0].name, 'Cached Company')
+
+    def test_cache_invalidated_on_save(self):
+        """Saving a company (new or update) must clear the 'sorted_companies' cache."""
+        # Warm up the cache
+        self.client.get(reverse('index'))
+        self.assertIsNotNone(cache.get('sorted_companies'))
+        
+        # Update the company
+        self.company.name = 'Updated Cached Company'
+        self.company.save()
+        
+        # Verify cache is cleared
+        self.assertIsNone(cache.get('sorted_companies'))
+
+    def test_cache_invalidated_on_delete(self):
+        """Deleting a company must clear the 'sorted_companies' cache."""
+        # Warm up the cache
+        self.client.get(reverse('index'))
+        self.assertIsNotNone(cache.get('sorted_companies'))
+        
+        # Delete the company
+        self.company.delete()
+        
+        # Verify cache is cleared
+        self.assertIsNone(cache.get('sorted_companies'))
+
+

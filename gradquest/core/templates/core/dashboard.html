@@ -116,7 +116,7 @@
       {% for company in companies %}
       <div class="card dashboard-card">
         <div class="logo-wrap {% if company.needs_white_bg %}white-bg{% endif %}">
-          <img src="{{ company.get_logo_url }}" alt="{{ company.name }}" />
+          <img src="{{ company.get_logo_url }}" alt="{{ company.name }}" loading="lazy" decoding="async" />
         </div>
         <span class="company-name">{{ company.name }}</span>
         <span class="badge">

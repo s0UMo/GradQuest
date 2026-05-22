@@ -93,6 +93,13 @@ DATABASES = {
     'default': dj_database_url.parse(db_url, conn_max_age=600)
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'gradquest-cache',
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -161,9 +168,9 @@ else:
     DEFAULT_STORAGE_OPTIONS = {}
 
 if DEBUG or 'test' in sys.argv or 'test_coverage' in sys.argv:
-    STATICFILES_STORAGE_BACKEND = "whitenoise.storage.CompressedStaticFilesStorage"
+    STATICFILES_STORAGE_BACKEND = "core.storage.OptimizedStaticFilesStorage"
 else:
-    STATICFILES_STORAGE_BACKEND = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    STATICFILES_STORAGE_BACKEND = "core.storage.OptimizedManifestStaticFilesStorage"
 
 STORAGES = {
     "default": {

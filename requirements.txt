@@ -9,3 +9,5 @@ django-storages[s3]>=1.14.2
 boto3>=1.34.0
 python-dotenv>=1.0.0
 whitenoise>=6.0.0
+jsmin>=3.0.1
+rcssmin>=1.2.2
