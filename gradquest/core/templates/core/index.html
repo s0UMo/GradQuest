@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GradQuest</title>
   <link rel="icon" type="image/x-icon" href="{% static 'assets/icons/stack-fill.svg' %}">
-  <link rel="stylesheet" href="{% static 'style.css' %}?v=2" />
+  <link rel="stylesheet" href="{% static 'style.css' %}?v={% now 'U' %}" />
 </head>
 <body>
 
@@ -55,13 +55,15 @@
         <div class="logo-wrap {% if company.needs_white_bg %}white-bg{% endif %}">
           <img src="{{ company.get_logo_url }}" alt="{{ company.name }}" loading="lazy" decoding="async" />
         </div>
-        <span class="company-name">{{ company.name }}</span>
-        <span class="badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          {{ company.question_count }}
-        </span>
+        <div class="card-info">
+          <span class="company-name">{{ company.name }}</span>
+          <span class="badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            {{ company.question_count }}
+          </span>
+        </div>
       </a>
       {% empty %}
       <p style="color: #9CA3AF; grid-column: 1 / -1; text-align: center;">No companies added yet.</p>
