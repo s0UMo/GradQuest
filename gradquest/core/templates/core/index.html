@@ -19,7 +19,12 @@
       </svg>
       <span>GradQuest</span>
     </div>
-    <div class="nav-links">
+    <button class="hamburger-btn" aria-label="Toggle menu" id="hamburgerBtn">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+    <div class="nav-links" id="navLinks">
       {% if user.is_authenticated and user.is_staff %}
         <a href="{% url 'dashboard' %}">Dashboard</a>
       {% endif %}
