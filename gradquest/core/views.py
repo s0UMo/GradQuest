@@ -4,11 +4,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db.models.functions import Lower
 from .models import Company, SiteSetting
 from .forms import CompanyForm, ChangeCredentialsForm
 
 def index(request):
-    companies = Company.objects.all()
+    companies = Company.objects.all().order_by(Lower('name'))
     return render(request, 'core/index.html', {'companies': companies})
 
 def pyq_redirect(request):
@@ -59,7 +60,7 @@ def staff_required(view_func):
 
 @staff_required
 def dashboard_view(request):
-    companies = Company.objects.all()
+    companies = Company.objects.all().order_by(Lower('name'))
     pyq_link = SiteSetting.get_pyq_link()
     return render(request, 'core/dashboard.html', {
         'companies': companies,

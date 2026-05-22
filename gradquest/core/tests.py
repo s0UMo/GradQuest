@@ -294,3 +294,35 @@ class CompanyAdminTestCase(TestCase):
         self.admin_user.refresh_from_db()
         self.assertEqual(self.admin_user.username, 'staffadmin')
 
+    def test_companies_sorted_alphabetically(self):
+        """Verify that companies are sorted alphabetically by name on the index page and dashboard."""
+        # Create additional companies out of order
+        Company.objects.create(
+            name='Zebra Corp',
+            link='https://leetcode.com/zebra',
+            question_count='10+ Questions',
+            logo_url='https://example.com/logo.png'
+        )
+        Company.objects.create(
+            name='Alpha Solutions',
+            link='https://leetcode.com/alpha',
+            question_count='20+ Questions',
+            logo_url='https://example.com/logo.png'
+        )
+        
+        # Test index view ordering
+        response = self.client.get(reverse('index'))
+        self.assertEqual(response.status_code, 200)
+        companies_in_context = list(response.context['companies'])
+        names = [c.name for c in companies_in_context]
+        # Should be sorted: 'Alpha Solutions', 'Test Company', 'Zebra Corp'
+        self.assertEqual(names, sorted(names, key=str.lower))
+
+        # Test dashboard view ordering (staff user required)
+        self.client.login(username='staffadmin', password='staffpassword123')
+        response_dash = self.client.get(reverse('dashboard'))
+        self.assertEqual(response_dash.status_code, 200)
+        companies_dash = list(response_dash.context['companies'])
+        names_dash = [c.name for c in companies_dash]
+        self.assertEqual(names_dash, sorted(names_dash, key=str.lower))
+
