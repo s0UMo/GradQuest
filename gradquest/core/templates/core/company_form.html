@@ -5,6 +5,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ action }} Company - GradQuest</title>
+  <meta name="description" content="Add or edit company resource cards, including logos and interview practice links." />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{ request.build_absolute_uri }}" />
+  <meta property="og:title" content="{{ action }} Company - GradQuest" />
+  <meta property="og:description" content="Add or edit company resource cards, including logos and interview practice links." />
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'banner.png' %}" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="{{ request.build_absolute_uri }}" />
+  <meta property="twitter:title" content="{{ action }} Company - GradQuest" />
+  <meta property="twitter:description" content="Add or edit company resource cards, including logos and interview practice links." />
+  <meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'banner.png' %}" />
+
   <link rel="icon" type="image/x-icon" href="{% static 'assets/icons/stack-fill.svg' %}">
   <link rel="stylesheet" href="{% static 'style.css' %}?v={% now 'U' %}" />
 </head>

@@ -5,6 +5,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GradQuest</title>
+  <meta name="description" content="GradQuest is a premium, modern, dark-themed tech interview preparation platform designed to help students crack technical interviews. Explore coding rounds and resources for top tech companies." />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{ request.build_absolute_uri }}" />
+  <meta property="og:title" content="GradQuest - Crack Your Next Tech Interview" />
+  <meta property="og:description" content="GradQuest is a premium, modern, dark-themed tech interview preparation platform designed to help students crack technical interviews. Explore coding rounds and resources for top tech companies." />
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'banner.png' %}" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="{{ request.build_absolute_uri }}" />
+  <meta property="twitter:title" content="GradQuest - Crack Your Next Tech Interview" />
+  <meta property="twitter:description" content="GradQuest is a premium, modern, dark-themed tech interview preparation platform designed to help students crack technical interviews. Explore coding rounds and resources for top tech companies." />
+  <meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'banner.png' %}" />
+
   <link rel="icon" type="image/x-icon" href="{% static 'assets/icons/stack-fill.svg' %}">
   <link rel="stylesheet" href="{% static 'style.css' %}?v={% now 'U' %}" />
 </head>
