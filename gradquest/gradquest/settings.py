@@ -184,3 +184,7 @@ STORAGES = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Logo.dev API keys
+LOGO_DEV_PUBLISHABLE_KEY = os.environ.get('LOGO_DEV_PUBLISHABLE_KEY', '')
+LOGO_DEV_SECRET_KEY = os.environ.get('LOGO_DEV_SECRET_KEY', '')

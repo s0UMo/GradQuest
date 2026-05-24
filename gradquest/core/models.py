@@ -2,6 +2,8 @@ from django.db import models
 
 class Company(models.Model):
     name = models.CharField(max_length=100)
+    domain = models.CharField(max_length=100, blank=True, null=True, help_text="Domain name for Logo.dev integration (e.g. accenture.com)")
+    repo_folder = models.CharField(max_length=100, blank=True, null=True, help_text="Folder name of this company in the local com/ directory (e.g. accenture)")
     logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
     logo_url = models.URLField(blank=True, null=True, help_text="Alternatively, enter a direct image URL (e.g. from Imgur)")
     link = models.URLField(help_text="Link to LeetCode or question bank")
@@ -10,6 +12,10 @@ class Company(models.Model):
 
     @property
     def get_logo_url(self):
+        if self.domain:
+            from django.conf import settings
+            token = getattr(settings, 'LOGO_DEV_PUBLISHABLE_KEY', '')
+            return f"https://img.logo.dev/{self.domain}?token={token}&size=128"
         if self.logo_url:
             return self.logo_url
         elif self.logo:

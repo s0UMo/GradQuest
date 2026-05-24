@@ -72,7 +72,7 @@
   <main>
     <div class="grid" id="companyGrid">
       {% for company in companies %}
-      <a href="{{ company.link }}" target="_blank" class="card">
+      <a href="{% url 'company_detail' company.pk %}" class="card">
         <div class="logo-wrap {% if company.needs_white_bg %}white-bg{% endif %}">
           <img src="{{ company.get_logo_url }}" alt="{{ company.name }}" loading="lazy" decoding="async" />
         </div>

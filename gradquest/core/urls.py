@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('company/<int:pk>/', views.company_detail_view, name='company_detail'),
     path('pyq/', views.pyq_redirect, name='pyq'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),

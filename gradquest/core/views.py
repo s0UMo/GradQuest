@@ -23,6 +23,71 @@ def pyq_redirect(request):
         return redirect('/?coming_soon=true')
     return render(request, 'core/PYQ.html', {'pyq_link': pyq_link})
 
+def company_detail_view(request, pk):
+    import os
+    import csv
+    import json
+    from django.conf import settings
+    
+    company = get_object_or_404(Company, pk=pk)
+    
+    # 1. Check cache first
+    cache_key = f"local_questions_{company.repo_folder.lower()}"
+    parsed_data = cache.get(cache_key)
+    
+    if not parsed_data:
+        com_dir = os.path.join(settings.BASE_DIR.parent, 'com', company.repo_folder.lower())
+        csv_files = {
+            'all': 'all.csv',
+            'thirty_days': 'thirty-days.csv',
+            'three_months': 'three-months.csv',
+            'six_months': 'six-months.csv',
+            'more_than_six_months': 'more-than-six-months.csv'
+        }
+        
+        parsed_data = {}
+        for key, csv_name in csv_files.items():
+            csv_path = os.path.join(com_dir, csv_name)
+            questions_list = []
+            if os.path.exists(csv_path):
+                try:
+                    with open(csv_path, 'r', encoding='utf-8') as f:
+                        reader = csv.DictReader(f)
+                        for row in reader:
+                            try:
+                                q_id = int(row.get('ID', 0))
+                                title = row.get('Title', '')
+                                url = row.get('URL', '#')
+                                diff = row.get('Difficulty', 'Easy').strip().capitalize()
+                                accept = row.get('Acceptance %', 'N/A')
+                                freq_str = row.get('Frequency %', '0.0').replace('%', '').strip()
+                                freq = float(freq_str) if freq_str else 0.0
+                                
+                                questions_list.append({
+                                    'id': q_id,
+                                    'title': title,
+                                    'url': url,
+                                    'difficulty': diff,
+                                    'acceptance': accept,
+                                    'frequency': freq
+                                })
+                            except Exception:
+                                continue
+                except Exception:
+                    pass
+            parsed_data[key] = questions_list
+            
+        # Cache for 2 hours
+        cache.set(cache_key, parsed_data, 7200)
+        
+    # Serialize to JSON for interactive JS rendering
+    questions_json = json.dumps(parsed_data)
+    
+    return render(request, 'core/company_detail.html', {
+        'company': company,
+        'questions_json': questions_json
+    })
+
 
 def login_view(request):
     if request.user.is_authenticated and request.user.is_staff:
