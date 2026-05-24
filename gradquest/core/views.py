@@ -32,11 +32,16 @@ def company_detail_view(request, pk):
     company = get_object_or_404(Company, pk=pk)
     
     # 1. Check cache first
-    cache_key = f"local_questions_{company.repo_folder.lower()}"
+    repo_folder = company.repo_folder or ""
+    if not repo_folder:
+        import re
+        repo_folder = re.sub(r'[^a-z0-9\-]', '', company.name.lower().replace(' ', '-'))
+    
+    cache_key = f"local_questions_{repo_folder.lower()}"
     parsed_data = cache.get(cache_key)
     
     if not parsed_data:
-        com_dir = os.path.join(settings.BASE_DIR.parent, 'com', company.repo_folder.lower())
+        com_dir = os.path.join(settings.BASE_DIR.parent, 'com', repo_folder.lower())
         csv_files = {
             'all': 'all.csv',
             'thirty_days': 'thirty-days.csv',
