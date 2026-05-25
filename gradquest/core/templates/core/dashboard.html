@@ -59,7 +59,10 @@
         </svg>
         <input type="text" id="searchInput" placeholder="Search dashboard..." style="padding-left: 48px;" />
       </div>
-      <a href="{% url 'company_create' %}" class="btn btn-primary" style="height: 48px; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px;">
+      <a href="{% url 'company_bulk_add' %}" class="btn btn-secondary" style="height: 48px; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; white-space: nowrap;">
+        + Bulk Add
+      </a>
+      <a href="{% url 'company_create' %}" class="btn btn-primary" style="height: 48px; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; white-space: nowrap;">
         + Add Company
       </a>
     </div>
@@ -128,9 +131,20 @@
 
 
     <!-- Section Heading for Companies list -->
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 12px; margin-bottom: 24px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 12px; margin-bottom: 24px; gap: 16px; flex-wrap: wrap;">
       <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-pri); margin: 0;">Companies</h2>
-      <span style="font-size: 0.85rem; color: var(--text-sec); font-weight: 500;">{{ companies|length }} companies listed</span>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <span style="font-size: 0.85rem; color: var(--text-sec); font-weight: 500;">{{ companies|length }} companies listed</span>
+        {% if companies %}
+          <button id="deleteAllBtn" class="btn btn-sm btn-delete" style="height: 36px; border-radius: 6px; padding: 0 16px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            Delete All
+          </button>
+        {% endif %}
+      </div>
     </div>
 
     <div class="grid" id="companyGrid">
@@ -162,6 +176,35 @@
   <footer>
     <p>Logged in as <span class="author">{{ user.username }}</span></p>
   </footer>
+
+  <!-- Delete All Confirmation Modal -->
+  <div id="deleteAllModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 440px;">
+      <button id="closeDeleteAllModalBtn" class="modal-close-btn">&times;</button>
+      <div class="modal-icon" style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); color: #f87171;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <h2>Delete All Companies?</h2>
+      <p style="margin-bottom: 8px;">This action is <strong>irreversible</strong>. This will permanently delete all company resource entries from the database.</p>
+      
+      <form method="post" action="{% url 'delete_all_companies' %}" style="width: 100%; display: flex; flex-direction: column; gap: 16px; align-items: stretch;">
+        {% csrf_token %}
+        <div class="form-group" style="margin-bottom: 0; text-align: left;">
+          <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-sec); margin-bottom: 6px; display: block; text-transform: uppercase;">Re-enter Admin Password</label>
+          <input type="password" name="password" required placeholder="••••••••" 
+                 style="width: 100%; padding: 12px 14px; background: #111112; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: var(--text-pri); font-family: inherit; font-size: 0.95rem; outline: none; transition: border-color var(--ease);" />
+        </div>
+        <div style="display: flex; gap: 12px; width: 100%;">
+          <button type="submit" class="btn btn-delete" style="flex: 2; height: 48px; border-radius: 8px;">Yes, Delete All</button>
+          <button type="button" id="cancelDeleteAllBtn" class="btn btn-secondary" style="flex: 1; height: 48px; border-radius: 8px;">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <div class="messages-container" id="toastContainer">
     {% if messages %}
@@ -204,6 +247,42 @@
           }, 500);
         }, 4000);
       });
+
+      // Delete All Modal Logic
+      const deleteAllBtn = document.getElementById('deleteAllBtn');
+      const deleteAllModal = document.getElementById('deleteAllModal');
+      const closeDeleteAllModalBtn = document.getElementById('closeDeleteAllModalBtn');
+      const cancelDeleteAllBtn = document.getElementById('cancelDeleteAllBtn');
+
+      if (deleteAllBtn && deleteAllModal) {
+        deleteAllBtn.addEventListener('click', () => {
+          deleteAllModal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          // Auto focus the password input
+          const pwdField = deleteAllModal.querySelector('input[type="password"]');
+          if (pwdField) setTimeout(() => pwdField.focus(), 100);
+        });
+
+        const closePurgeModal = () => {
+          deleteAllModal.classList.remove('active');
+          document.body.style.overflow = '';
+          const pwdField = deleteAllModal.querySelector('input[type="password"]');
+          if (pwdField) pwdField.value = '';
+        };
+
+        if (closeDeleteAllModalBtn) {
+          closeDeleteAllModalBtn.addEventListener('click', closePurgeModal);
+        }
+        if (cancelDeleteAllBtn) {
+          cancelDeleteAllBtn.addEventListener('click', closePurgeModal);
+        }
+
+        deleteAllModal.addEventListener('click', (e) => {
+          if (e.target === deleteAllModal) {
+            closePurgeModal();
+          }
+        });
+      }
     });
   </script>
 </body>

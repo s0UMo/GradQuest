@@ -380,3 +380,108 @@ class CompanyCacheTestCase(TestCase):
         self.assertIsNone(cache.get('sorted_companies'))
 
 
+class BulkOperationsTestCase(TestCase):
+    def setUp(self):
+        # Create standard admin user (staff)
+        self.admin_user = User.objects.create_user(
+            username='staffadmin', 
+            email='staff@example.com', 
+            password='staffpassword123',
+            is_staff=True
+        )
+        # Create regular user (non-staff)
+        self.regular_user = User.objects.create_user(
+            username='regularuser', 
+            email='user@example.com', 
+            password='userpassword123',
+            is_staff=False
+        )
+        
+        # Seed 3 companies
+        Company.objects.create(name='Apple', repo_folder='apple', link='https://leetcode.com/apple')
+        Company.objects.create(name='Amazon', repo_folder='amazon', link='https://leetcode.com/amazon')
+        Company.objects.create(name='Google', repo_folder='google', link='https://leetcode.com/google')
+
+    def test_delete_all_companies_unauthorized(self):
+        """Anonymous or regular users cannot delete all companies."""
+        url = reverse('delete_all_companies')
+        
+        # Anonymous
+        response = self.client.post(url, {'password': 'staffpassword123'})
+        self.assertRedirects(response, f"{reverse('login')}?next={url}")
+        self.assertEqual(Company.objects.count(), 3)
+        
+        # Regular user
+        self.client.login(username='regularuser', password='userpassword123')
+        response = self.client.post(url, {'password': 'staffpassword123'})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Company.objects.count(), 3)
+
+    def test_delete_all_companies_incorrect_password(self):
+        """Deleting all companies fails when re-entering an incorrect password."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        url = reverse('delete_all_companies')
+        
+        response = self.client.post(url, {'password': 'wrongpassword'})
+        self.assertRedirects(response, reverse('dashboard'))
+        self.assertEqual(Company.objects.count(), 3)
+
+    def test_delete_all_companies_success(self):
+        """Deleting all companies succeeds when re-entering the correct password."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        url = reverse('delete_all_companies')
+        
+        response = self.client.post(url, {'password': 'staffpassword123'})
+        self.assertRedirects(response, reverse('dashboard'))
+        self.assertEqual(Company.objects.count(), 0)
+
+    def test_bulk_add_companies_unauthorized(self):
+        """Anonymous or regular users cannot access bulk add views."""
+        url = reverse('company_bulk_add')
+        
+        # Anonymous
+        response = self.client.get(url)
+        self.assertRedirects(response, f"{reverse('login')}?next={url}")
+        
+        # Regular user
+        self.client.login(username='regularuser', password='userpassword123')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_bulk_add_companies_success_csv(self):
+        """Staff user can successfully bulk add companies using CSV data."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        url = reverse('company_bulk_add')
+        
+        csv_data = (
+            "Name,Link,Logo URL\n"
+            "Meta,https://leetcode.com/meta,https://img.logo.dev/meta.com\n"
+            "Netflix,https://leetcode.com/netflix,https://img.logo.dev/netflix.com\n"
+        )
+        
+        response = self.client.post(url, {'bulk_data': csv_data})
+        self.assertRedirects(response, reverse('dashboard'))
+        
+        # Verify both Netflix and Meta were created
+        self.assertTrue(Company.objects.filter(name='Meta').exists())
+        self.assertTrue(Company.objects.filter(name='Netflix').exists())
+        
+        meta = Company.objects.get(name='Meta')
+        self.assertEqual(meta.link, 'https://leetcode.com/meta')
+        self.assertEqual(meta.logo_url, 'https://img.logo.dev/meta.com')
+
+    def test_bulk_add_companies_success_tsv(self):
+        """Staff user can successfully bulk add companies using tab-separated data."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        url = reverse('company_bulk_add')
+        
+        tsv_data = (
+            "Name\tLink\tLogo URL\n"
+            "Microsoft\thttps://leetcode.com/microsoft\thttps://img.logo.dev/microsoft.com\n"
+        )
+        
+        response = self.client.post(url, {'bulk_data': tsv_data})
+        self.assertRedirects(response, reverse('dashboard'))
+        self.assertTrue(Company.objects.filter(name='Microsoft').exists())
+
+

@@ -12,4 +12,6 @@ urlpatterns = [
     path('dashboard/delete/<int:pk>/', views.company_delete_view, name='company_delete'),
     path('dashboard/update-pyq-link/', views.update_pyq_link_view, name='update_pyq_link'),
     path('dashboard/change-credentials/', views.change_credentials_view, name='change_credentials'),
+    path('dashboard/delete-all/', views.delete_all_companies_view, name='delete_all_companies'),
+    path('dashboard/bulk-add/', views.company_bulk_add_view, name='company_bulk_add'),
 ]

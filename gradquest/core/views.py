@@ -166,3 +166,185 @@ def change_credentials_view(request):
             messages.error(request, "Failed to update credentials: " + " ".join(error_list))
             
     return redirect('dashboard')
+
+
+@staff_required
+def delete_all_companies_view(request):
+    if request.method == 'POST':
+        password = request.POST.get('password', '').strip()
+        if request.user.check_password(password):
+            count = Company.objects.all().count()
+            Company.objects.all().delete()
+            cache.delete('sorted_companies')
+            messages.success(request, f"Successfully deleted all {count} companies from the database.")
+        else:
+            messages.error(request, "Incorrect confirmation password. Bulk deletion aborted.")
+    return redirect('dashboard')
+
+
+@staff_required
+def company_bulk_add_view(request):
+    if request.method == 'POST':
+        bulk_data = request.POST.get('bulk_data', '').strip()
+        if not bulk_data:
+            messages.error(request, "No data provided. Please enter row and column data.")
+            return redirect('company_bulk_add')
+        
+        import re
+        import csv
+        import io
+        import os
+        from django.conf import settings
+        from django.db import transaction
+        from django.db.models import Count
+        
+        # Support both comma-separated and tab-separated formats dynamically
+        # Detect delimiter by checking the first line
+        first_line = bulk_data.split('\n')[0] if bulk_data else ""
+        delimiter = '\t' if '\t' in first_line else ','
+        
+        f = io.StringIO(bulk_data)
+        reader = csv.reader(f, delimiter=delimiter)
+        
+        # Check if first line is a header
+        header = next(reader, None)
+        has_header = False
+        if header:
+            # If the first column contains "name", "serial", "no" case-insensitively, it's a header
+            first_col = header[0].lower()
+            if 'name' in first_col or 'serial' in first_col or 'no' in first_col or 'title' in first_col:
+                has_header = True
+            else:
+                # Not a header, rewind StringIO
+                f.seek(0)
+                reader = csv.reader(io.StringIO(bulk_data), delimiter=delimiter)
+        
+        rows_imported = 0
+        rows_updated = 0
+        
+        com_dir = os.path.join(settings.BASE_DIR.parent, 'com')
+        folder_map = {
+            'sap labs': 'sap',
+            'hcltech': 'hcl',
+            'razor pay': 'razorpay',
+            'sales force': 'salesforce',
+            'tech mahindra': 'tech-mahindra'
+        }
+        
+        white_bg_folders = [
+            'tcs', 'accenture', 'infosys', 'wipro', 'cognizant', 'capgemini', 'deloitte', 'hcl', 'sap'
+        ]
+        
+        try:
+            with transaction.atomic():
+                for row_idx, row in enumerate(reader, start=1):
+                    if not row or len(row) < 2:
+                        continue
+                    
+                    # Determine column indices
+                    name_idx = 0
+                    link_idx = 1
+                    logo_idx = 2
+                    
+                    try:
+                        # Test if the first value is a serial number
+                        int(row[0].strip())
+                        # If yes, shift indices
+                        name_idx = 1
+                        link_idx = 2
+                        logo_idx = 3
+                    except ValueError:
+                        pass
+                    
+                    if len(row) <= name_idx:
+                        continue
+                        
+                    name = row[name_idx].strip()
+                    link = row[link_idx].strip() if len(row) > link_idx else ""
+                    logo_url = row[logo_idx].strip() if len(row) > logo_idx else ""
+                    
+                    if not name or not link:
+                        continue
+                    
+                    # Standardize repo_folder
+                    name_lower = name.lower()
+                    if name_lower in folder_map:
+                        folder_lower = folder_map[name_lower]
+                    else:
+                        folder_lower = name_lower.replace(' ', '-')
+                        folder_lower = re.sub(r'[^a-z0-9\-]', '', folder_lower)
+                    
+                    # Count local questions if com/ folder exists
+                    questions_count = 0
+                    local_csv = os.path.join(com_dir, folder_lower, 'all.csv')
+                    if os.path.exists(local_csv):
+                        try:
+                            with open(local_csv, 'r', encoding='utf-8') as lf:
+                                lreader = csv.reader(lf)
+                                next(lreader, None)  # Skip header
+                                questions_count = sum(1 for lrow in lreader if lrow)
+                        except Exception:
+                            pass
+                    
+                    # Fallback question count logic
+                    if questions_count > 0:
+                        question_count_str = f"{questions_count}+ Questions"
+                    else:
+                        # Check existing database company question count
+                        existing_comp = Company.objects.filter(repo_folder=folder_lower).first()
+                        if existing_comp and "0+" not in existing_comp.question_count:
+                            question_count_str = existing_comp.question_count
+                        else:
+                            question_count_str = "100+ Questions" if folder_lower in ['accenture', 'capgemini', 'cognizant', 'deloitte', 'infosys', 'tcs', 'wipro'] else "50+ Questions"
+                    
+                    # Update or create database record
+                    comp, created = Company.objects.update_or_create(
+                        repo_folder=folder_lower,
+                        defaults={
+                            'name': name,
+                            'link': link,
+                            'logo_url': logo_url,
+                            'question_count': question_count_str,
+                            'needs_white_bg': folder_lower in white_bg_folders
+                        }
+                    )
+                    
+                    if created:
+                        rows_imported += 1
+                    else:
+                        rows_updated += 1
+                        
+            # Clean duplicates after bulk import too!
+            duplicates = (
+                Company.objects.values('name')
+                .annotate(name_count=Count('id'))
+                .filter(name_count__gt=1)
+            )
+            count_deleted = 0
+            for dup in duplicates:
+                dup_name = dup['name']
+                records = list(Company.objects.filter(name=dup_name))
+                records.sort(
+                    key=lambda c: (
+                        1 if c.repo_folder else 0,
+                        1 if c.link and c.link != '#' else 0,
+                        c.id
+                    ),
+                    reverse=True
+                )
+                for c in records[1:]:
+                    c.delete()
+                    count_deleted += 1
+            
+            cache.delete('sorted_companies')
+            msg = f"Bulk import complete! Created {rows_imported} new companies, updated {rows_updated} companies."
+            if count_deleted > 0:
+                msg += f" Purged {count_deleted} duplicate database records."
+            messages.success(request, msg)
+            return redirect('dashboard')
+            
+        except Exception as e:
+            messages.error(request, f"Error parsing CSV/TSV data: {e}")
+            return redirect('company_bulk_add')
+            
+    return render(request, 'core/company_bulk_form.html')

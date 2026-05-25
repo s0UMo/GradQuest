@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulk Add Companies - GradQuest</title>
+  <meta name="description" content="Copy-paste row and column data entries to bulk-import interview prep companies instantly on GradQuest." />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{ request.build_absolute_uri }}" />
+  <meta property="og:title" content="Bulk Add Companies - GradQuest" />
+  <meta property="og:description" content="Copy-paste row and column data entries to bulk-import interview prep companies instantly on GradQuest." />
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'banner.png' %}" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="{{ request.build_absolute_uri }}" />
+  <meta property="twitter:title" content="Bulk Add Companies - GradQuest" />
+  <meta property="twitter:description" content="Copy-paste row and column data entries to bulk-import interview prep companies instantly on GradQuest." />
+  <meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'banner.png' %}" />
+
+  <link rel="icon" type="image/x-icon" href="{% static 'assets/icons/stack-fill.svg' %}">
+  <link rel="stylesheet" href="{% static 'style.css' %}?v={% now 'U' %}" />
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#EDEDED"/>
+        <path d="M2 12L12 17L22 12" stroke="#EDEDED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 17L12 22L22 17" stroke="#EDEDED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>GradQuest</span>
+    </div>
+    <button class="hamburger-btn" aria-label="Toggle menu" id="hamburgerBtn">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'pyq' %}">IEM Previous Year Questions</a>
+      <a href="{% url 'index' %}">Interview Coding Round</a>
+      <a href="{% url 'logout' %}" class="login-nav-btn logout-link">Logout</a>
+    </div>
+  </nav>
+
+  <!-- Main Bulk Seeder Panel -->
+  <main style="display: flex; justify-content: center; align-items: center; padding: 48px 24px; min-height: calc(100vh - 200px); width: 100%;">
+    <div class="card" style="width: 100%; max-width: 750px; padding: 40px; text-align: left; cursor: default; align-items: stretch; animation: fadeUp 0.45s ease both;">
+      <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; text-align: center; color: var(--text-pri);">Bulk Add Companies</h2>
+      <p style="color: var(--text-sec); font-size: 0.85rem; margin-bottom: 24px; text-align: center;">Enter or paste spreadsheet rows and columns (Comma or Tab separated) below to register in bulk.</p>
+
+      <!-- Formatting Guideline Alert -->
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; margin-bottom: 24px; font-size: 0.8rem; color: var(--text-sec);">
+        <strong style="color: var(--text-pri); display: block; margin-bottom: 6px;">💡 Accepted copy-paste formats:</strong>
+        <p style="margin-bottom: 8px; line-height: 1.4;">Copy-paste directly from an Excel sheet or enter CSV values using either comma (<code>,</code>) or tab (<code>[TAB]</code>) delimiters. Format follows: <code>[Serial,] Company Name, LeetCode Link [, Logo Image URL]</code></p>
+        <div style="background: rgba(0,0,0,0.3); border-radius: 4px; padding: 8px 12px; font-family: monospace; line-height: 1.5; color: #a1a1aa; border: 1px solid rgba(255,255,255,0.04);">
+          Accenture, https://leetcode.com/list/d5t0m3kj/, https://assets.leetcode.com/...<br/>
+          Capgemini, https://leetcode.com/list/dhmpjij5/, https://assets.leetcode.com/...
+        </div>
+      </div>
+
+      <form method="post" style="display: flex; flex-direction: column; gap: 24px;">
+        {% csrf_token %}
+        
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="bulkTextarea" style="font-size: 0.8rem; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Row and Column Data Entry</label>
+          <textarea id="bulkTextarea" name="bulk_data" required placeholder="Paste rows from spreadsheet or paste CSV here..." 
+                    style="width: 100%; height: 180px; padding: 14px 16px; background: #111112; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: var(--text-pri); font-family: monospace; font-size: 0.9rem; outline: none; transition: border-color var(--ease); resize: vertical;"></textarea>
+        </div>
+
+        <!-- Spreadsheet-like Live Preview Grid -->
+        <div id="previewContainer" style="display: none; margin-top: 8px; width: 100%; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 24px;">
+          <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-pri); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            📊 Spreadsheet Preview Grid (<span id="previewCount">0</span> rows parsed)
+          </h3>
+          <div style="width: 100%; overflow-x: auto; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; background: rgba(0, 0, 0, 0.2); max-height: 240px; overflow-y: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+              <thead>
+                <tr style="background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.08); position: sticky; top: 0; z-index: 10;">
+                  <th style="padding: 10px 16px; color: var(--text-sec); width: 60px;">Row</th>
+                  <th style="padding: 10px 16px; color: var(--text-sec); width: 150px;">Company Name</th>
+                  <th style="padding: 10px 16px; color: var(--text-sec); width: 220px;">LeetCode playlist Link</th>
+                  <th style="padding: 10px 16px; color: var(--text-sec);">Logo URL</th>
+                </tr>
+              </thead>
+              <tbody id="previewBody">
+                <!-- Loaded dynamically via interactive Javascript engine -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="form-actions" style="display: flex; gap: 12px; margin-top: 12px;">
+          <button type="submit" class="btn btn-primary" style="flex: 2; padding: 14px; font-weight: 600; border-radius: 8px; height: 48px;">
+            🚀 Import Companies
+          </button>
+          <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="flex: 1; padding: 14px; font-weight: 600; border-radius: 8px; text-align: center; height: 48px; display: inline-flex; align-items: center; justify-content: center;">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>Empowering developers to crack the interview.</p>
+    <p>Built by <span class="author">Soumyajit Paul</span></p>
+  </footer>
+
+  <script src="{% static 'script.js' %}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const bulkTextarea = document.getElementById('bulkTextarea');
+      const previewContainer = document.getElementById('previewContainer');
+      const previewBody = document.getElementById('previewBody');
+      const previewCount = document.getElementById('previewCount');
+
+      if (bulkTextarea) {
+        bulkTextarea.addEventListener('input', () => {
+          const text = bulkTextarea.value.trim();
+          if (!text) {
+            previewContainer.style.display = 'none';
+            previewBody.innerHTML = '';
+            return;
+          }
+
+          const lines = text.split('\n');
+          let parsedRows = [];
+          
+          const firstLine = lines[0] || "";
+          const delimiter = firstLine.includes('\t') ? '\t' : ',';
+
+          lines.forEach((line, idx) => {
+            const trimmedLine = line.trim();
+            if (!trimmedLine) return;
+
+            // Simple split by delimiter (ignoring quote-escapes for simple preview)
+            let cols = trimmedLine.split(delimiter).map(c => c.trim().replace(/^["']|["']$/g, ''));
+            if (cols.length < 2) return;
+
+            // Skip header if it is matching fields
+            if (idx === 0) {
+              const firstCol = cols[0].toLowerCase();
+              if (firstCol.includes('name') || firstCol.includes('serial') || firstCol.includes('no') || firstCol.includes('title')) {
+                return;
+              }
+            }
+
+            // Test if first column is serial number
+            let nameIdx = 0;
+            let linkIdx = 1;
+            let logoIdx = 2;
+            
+            if (!isNaN(cols[0]) && cols[0].length < 4) {
+              nameIdx = 1;
+              linkIdx = 2;
+              logoIdx = 3;
+            }
+
+            if (cols.length <= nameIdx) return;
+
+            const name = cols[nameIdx] || '';
+            const link = cols[linkIdx] || '';
+            const logo = cols[logoIdx] || '';
+
+            if (name && link) {
+              parsedRows.push({ name, link, logo });
+            }
+          });
+
+          if (parsedRows.length > 0) {
+            previewCount.textContent = parsedRows.length;
+            previewContainer.style.display = 'block';
+            
+            previewBody.innerHTML = parsedRows.map((row, idx) => `
+              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+                <td style="padding: 10px 16px; color: var(--text-sec); font-weight: 600;">#${idx + 1}</td>
+                <td style="padding: 10px 16px; font-weight: 600; color: var(--text-pri); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${row.name}</td>
+                <td style="padding: 10px 16px; color: var(--text-sec); font-family: monospace; font-size: 0.75rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${row.link}</td>
+                <td style="padding: 10px 16px; color: var(--text-sec); font-family: monospace; font-size: 0.75rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${row.logo || '<span style="color:#ef4444; font-style:italic;">None (Fallback/Upload)</span>'}</td>
+              </tr>
+            `).join('');
+          } else {
+            previewContainer.style.display = 'none';
+            previewBody.innerHTML = '';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
