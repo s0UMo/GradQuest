@@ -208,12 +208,24 @@ def company_bulk_add_view(request):
         
         # Check if first line is a header
         header = next(reader, None)
+        header_mapping = {}
         has_header = False
         if header:
-            # If the first column contains "name", "serial", "no" case-insensitively, it's a header
-            first_col = header[0].lower()
-            if 'name' in first_col or 'serial' in first_col or 'no' in first_col or 'title' in first_col:
+            # Clean and lowercase the header values
+            header_lower = [h.strip().lower() for h in header]
+            first_col = header_lower[0]
+            if 'name' in first_col or 'serial' in first_col or 'no' in first_col or 'title' in first_col or 'link' in first_col or 'question' in first_col:
                 has_header = True
+                # Map headers dynamically
+                for idx, col in enumerate(header_lower):
+                    if 'name' in col or 'title' in col:
+                        header_mapping['name'] = idx
+                    elif 'logo' in col:
+                        header_mapping['logo_url'] = idx
+                    elif 'link' in col or 'url' in col:
+                        header_mapping['link'] = idx
+                    elif any(q in col for q in ['question', 'count', 'no. of', 'no of', 'qty', 'questions', 'size']):
+                        header_mapping['question_count'] = idx
             else:
                 # Not a header, rewind StringIO
                 f.seek(0)
@@ -241,27 +253,44 @@ def company_bulk_add_view(request):
                     if not row or len(row) < 2:
                         continue
                     
-                    # Determine column indices
-                    name_idx = 0
-                    link_idx = 1
-                    logo_idx = 2
-                    
-                    try:
-                        # Test if the first value is a serial number
-                        int(row[0].strip())
-                        # If yes, shift indices
-                        name_idx = 1
-                        link_idx = 2
-                        logo_idx = 3
-                    except ValueError:
-                        pass
-                    
-                    if len(row) <= name_idx:
-                        continue
+                    if has_header and header_mapping:
+                        name_idx = header_mapping.get('name')
+                        link_idx = header_mapping.get('link')
+                        logo_idx = header_mapping.get('logo_url')
+                        q_count_idx = header_mapping.get('question_count')
                         
-                    name = row[name_idx].strip()
-                    link = row[link_idx].strip() if len(row) > link_idx else ""
-                    logo_url = row[logo_idx].strip() if len(row) > logo_idx else ""
+                        name = row[name_idx].strip() if (name_idx is not None and len(row) > name_idx) else ""
+                        link = row[link_idx].strip() if (link_idx is not None and len(row) > link_idx) else ""
+                        logo_url = row[logo_idx].strip() if (logo_idx is not None and len(row) > logo_idx) else ""
+                        q_count_input = row[q_count_idx].strip() if (q_count_idx is not None and len(row) > q_count_idx) else ""
+                    else:
+                        # Determine column indices by positional logic
+                        is_serial = False
+                        try:
+                            # Test if the first value is a serial number
+                            int(row[0].strip())
+                            is_serial = True
+                        except ValueError:
+                            pass
+                        
+                        if is_serial:
+                            name_idx = 1
+                            link_idx = 2
+                            logo_idx = 3
+                            q_count_idx = 4
+                        else:
+                            name_idx = 0
+                            link_idx = 1
+                            logo_idx = 2
+                            q_count_idx = 3
+                            
+                        if len(row) <= name_idx:
+                            continue
+                            
+                        name = row[name_idx].strip()
+                        link = row[link_idx].strip() if len(row) > link_idx else ""
+                        logo_url = row[logo_idx].strip() if len(row) > logo_idx else ""
+                        q_count_input = row[q_count_idx].strip() if len(row) > q_count_idx else ""
                     
                     if not name or not link:
                         continue
@@ -287,7 +316,14 @@ def company_bulk_add_view(request):
                             pass
                     
                     # Fallback question count logic
-                    if questions_count > 0:
+                    if q_count_input:
+                        # Standardize, e.g. "45" -> "45+ Questions"
+                        val = q_count_input.lower().replace('questions', '').replace('question', '').replace('+', '').strip()
+                        if val.isdigit():
+                            question_count_str = f"{val}+ Questions"
+                        else:
+                            question_count_str = q_count_input
+                    elif questions_count > 0:
                         question_count_str = f"{questions_count}+ Questions"
                     else:
                         # Check existing database company question count

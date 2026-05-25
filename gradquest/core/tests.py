@@ -484,4 +484,32 @@ class BulkOperationsTestCase(TestCase):
         self.assertRedirects(response, reverse('dashboard'))
         self.assertTrue(Company.objects.filter(name='Microsoft').exists())
 
+    def test_bulk_add_companies_with_question_count(self):
+        """Staff user can successfully bulk add companies specifying question counts explicitly."""
+        self.client.login(username='staffadmin', password='staffpassword123')
+        url = reverse('company_bulk_add')
+        
+        csv_data = (
+            "Name,Link,Logo URL,Question Count\n"
+            "Meta,https://leetcode.com/meta,https://img.logo.dev/meta.com,125\n"
+            "Netflix,https://leetcode.com/netflix,https://img.logo.dev/netflix.com,45+ Questions\n"
+            "Adobe,https://leetcode.com/adobe,https://img.logo.dev/adobe.com,90+\n"
+        )
+        
+        response = self.client.post(url, {'bulk_data': csv_data})
+        self.assertRedirects(response, reverse('dashboard'))
+        
+        # Verify Meta question count got standardized
+        meta = Company.objects.get(name='Meta')
+        self.assertEqual(meta.question_count, '125+ Questions')
+        
+        # Verify Netflix kept its string representation
+        netflix = Company.objects.get(name='Netflix')
+        self.assertEqual(netflix.question_count, '45+ Questions')
+        
+        # Verify Adobe kept its string representation
+        adobe = Company.objects.get(name='Adobe')
+        self.assertEqual(adobe.question_count, '90+ Questions')
+
+
 
