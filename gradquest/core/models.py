@@ -12,10 +12,6 @@ class Company(models.Model):
 
     @property
     def get_logo_url(self):
-        if self.domain:
-            from django.conf import settings
-            token = getattr(settings, 'LOGO_DEV_PUBLISHABLE_KEY', '')
-            return f"https://img.logo.dev/{self.domain}?token={token}&size=128"
         if self.logo_url:
             return self.logo_url
         elif self.logo:
